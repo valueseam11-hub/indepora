@@ -1,0 +1,11 @@
+services:
+  indepora:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      PORT: "8000"
+      INDEPORA_STATIC_DIR: /app/web
+    restart: unless-stopped

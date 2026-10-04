@@ -1,0 +1,15 @@
+.git
+.venv
+node_modules
+**/node_modules
+.next
+**/.next
+out
+**/out
+__pycache__
+**/__pycache__
+*.py[cod]
+.env
+.env.*
+!.env.example
+.pytest_cache

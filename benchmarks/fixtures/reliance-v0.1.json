@@ -1,0 +1,45 @@
+{
+  "fixture_id": "indepora-reliance-v0.1-demo",
+  "purpose": "Synthetic smoke-test fixture; not an accuracy benchmark.",
+  "request": {
+    "claim": "Northstar Systems received a $12M regulatory fine.",
+    "answer": "Northstar Systems received a $12M regulatory fine. The company disputes the finding.",
+    "evidence": [
+      {
+        "id": "origin-a",
+        "title": "Regulator enforcement notice",
+        "url": "https://regulator.example/notices/42",
+        "text": "The regulator issued a $12M fine to Northstar Systems.",
+        "stance": "supports"
+      },
+      {
+        "id": "copy-b",
+        "title": "Syndicated news report",
+        "url": "https://daily.example/northstar-fine",
+        "text": "The regulator issued a $12M fine to Northstar Systems.",
+        "derived_from": ["origin-a"],
+        "stance": "supports"
+      },
+      {
+        "id": "filing-c",
+        "title": "Court filing",
+        "url": "https://court.example/docket/99",
+        "text": "The filing records a $12M penalty imposed on Northstar Systems.",
+        "stance": "supports"
+      },
+      {
+        "id": "company-d",
+        "title": "Company statement",
+        "url": "https://northstar.example/statement",
+        "text": "Northstar Systems says the penalty remains under appeal.",
+        "stance": "contradicts"
+      }
+    ]
+  },
+  "expected_invariants": {
+    "independence_assessment": "NOT_ESTABLISHED",
+    "authority": "NOT_ASSESSED",
+    "conflict_count": 1,
+    "claim_truth": "NOT_ASSESSED"
+  }
+}
