@@ -77,6 +77,6 @@ Run the deterministic local fixture with:
 apps/api/.venv/bin/python benchmarks/smoke.py
 ```
 
-The bounded live-load suite is documented in [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md); it is hard-capped at 900 analysis requests plus one health check and 60 seconds.
+The bounded live-load suite is documented in [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md); the current fixed plan is 250 analysis requests plus one health check and a 60-second maximum. The first live attempt stopped safely at the deadline before reaching the 5/10-client phases; see [`docs/LIVE_LOAD_TEST_REPORT.md`](docs/LIVE_LOAD_TEST_REPORT.md).
 
 This MVP is not a compliance certification or multi-tenant SaaS system. It has no email-based password recovery, invitation/role model, managed retention schedule, external security audit, or deployment-level backup guarantee. Lost-password recovery is an operator-only Railway SSH command that prompts for the new password without echoing it and revokes all sessions. Do not treat the prototype as certified for regulated workloads.

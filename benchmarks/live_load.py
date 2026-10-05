@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Bounded synthetic load check for the approved live Indepora preview.
 
-Hard limits: 900 synthetic analysis calls plus one health check, 60 seconds
+Hard limits: 250 synthetic analysis calls plus one health check, 60 seconds
 maximum, concurrency phases of 1/5/10, and immediate stop-on-instability. The
 host, payload, and limits are fixed; no argument can expand or redirect the run.
 """
@@ -17,10 +17,10 @@ import httpx
 
 BASE_URL = "https://indepora-production.up.railway.app"
 MAX_DURATION_SECONDS = 60.0
-MAX_ANALYSIS_REQUESTS = 900
+MAX_ANALYSIS_REQUESTS = 250
 MAX_NON_200_RATE = 0.01
 MAX_P95_SECONDS = 5.0
-PHASES = ((1, 100), (5, 300), (10, 500))
+PHASES = ((1, 25), (5, 75), (10, 150))
 
 PAYLOAD: dict[str, Any] = {
     "claim": "Synthetic bounded-load fixture; no real claim.",
