@@ -4,10 +4,12 @@ import hashlib
 import json
 from typing import Any
 
+from . import __version__
 from .claim_forge import resolve_claim
 from .models import InspectRequest
 from .origin_mesh import canonicalize_url, content_fingerprint, origin_key
 from .policy_engine import assess_freshness, evaluate_policy
+from .records import enrich_report
 from .reliance_map import build_reliance_map
 from .separation_engine import analyze_relationships
 from .thread_builder import build_threads
@@ -41,16 +43,14 @@ def inspect_reliance(request: InspectRequest) -> dict[str, Any]:
             "note": "The system did not semantically verify these stances.",
         })
 
-    policy_dict = request.policy.model_dump() if request.policy else None
-    max_age = policy_dict.get("max_age_days") if policy_dict else None
-    freshness = assess_freshness(evidence, max_age)
+    charter = request.policy.model_dump(mode="json") if request.policy else None
+    freshness = assess_freshness(evidence, charter.get("max_age_days") if charter else None)
     mapped = build_reliance_map(claim, evidence, relations)
-    # Count unique submitted locators/content keys, not independent sources.
     document_keys = {
         item.get("canonical_url") or item.get("content_fingerprint") or item["id"]
         for item in evidence
     }
-    policy_result = evaluate_policy(evidence, relations, conflicts, freshness, policy_dict)
+    policy_result = evaluate_policy(evidence, relations, conflicts, freshness, charter)
 
     id_material = {
         "claim_id": claim["id"],
@@ -67,13 +67,13 @@ def inspect_reliance(request: InspectRequest) -> dict[str, Any]:
             }
             for item in evidence
         ],
-        "policy": policy_dict,
+        "charter": charter,
     }
     id_bytes = json.dumps(id_material, sort_keys=True, separators=(",", ":")).encode("utf-8")
     reliance_id = "rel_" + hashlib.sha256(id_bytes).hexdigest()[:16]
 
     report: dict[str, Any] = {
-        "schema_version": "0.1.0",
+        "schema_version": "0.2.0",
         "reliance_id": reliance_id,
         "claim": claim,
         "summary": {
@@ -91,8 +91,9 @@ def inspect_reliance(request: InspectRequest) -> dict[str, Any]:
         "reliance_map": mapped,
         "conflicts": conflicts,
         "freshness": freshness,
-        "authority": {"state": "NOT_ASSESSED", "note": "Source authority is not ranked in v0.1."},
+        "authority": {"state": "NOT_ASSESSED", "note": "Source authority is not ranked in this engine version."},
         "policy_result": policy_result,
+        "engine_version": __version__,
     }
     report["witness"] = create_witness(report)
-    return report
+    return enrich_report(report, request)

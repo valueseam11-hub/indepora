@@ -1,11 +1,35 @@
 services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: indepora
+      POSTGRES_USER: indepora
+      POSTGRES_PASSWORD: local-only-password
+    volumes:
+      - indepora_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U indepora -d indepora"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
   indepora:
     build:
       context: .
       dockerfile: Dockerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
     ports:
-      - "8000:8000"
+      - "127.0.0.1:8000:8000"
     environment:
       PORT: "8000"
+      DATABASE_URL: postgresql+psycopg://indepora:local-only-password@postgres:5432/indepora
+      INDEPORA_BOOTSTRAP_SECRET: local-development-bootstrap-secret-rotate-me
+      INDEPORA_COOKIE_SECURE: "false"
       INDEPORA_STATIC_DIR: /app/web
     restart: unless-stopped
+
+volumes:
+  indepora_postgres_data:

@@ -1,73 +1,61 @@
-# Indepora Reliance Fabric v0.1
+# Indepora Reliance Fabric v0.2.0
 
-A focused first slice of the architecture: map claim/evidence relationships, trace supplied derivations, surface exact repeated text, and make unknown lineage visible. It does not determine truth or infer independence from different URLs.
+**Indepora** is a private, single-owner evidence-assurance prototype for mapping claim-to-evidence lineage, surfacing dependent echoes, and keeping unknown relationships explicitly unknown. It does not determine claim truth or prove that sources are independent.
 
-## Architecture in this build
+## What this release does
 
-`Reliance Ingress → Claim Forge → Origin Mesh → Thread Builder → Reliance Map → Separation Engine → Conflict/Freshness/Authority assessment → optional Reliance Policy/Gate → Reliance Witness → Reliance Seal`
+The application follows the architecture pipeline `Reliance Ingress → Claim Forge → Origin Mesh → Thread Builder → Reliance Map → Separation Engine → Conflict/Freshness/Authority assessment → optional Charter/Gate → Reliance Witness → Reliance Seal`. The FastAPI engines are separated into modules under `apps/api/indepora`; the React/Next.js interface is statically exported and served same-origin.
 
-Each stage is implemented as a separate Python module under `apps/api/indepora`. The web console is Next.js/React/TypeScript and the API is FastAPI.
+The workspace has **one owner account, no public sign-up, no teams, and no automatic data retention**. Inspect requests are request-scoped and are not written to the database. Only the explicit **Save Reliance Record** action stores the submitted claim, answer, evidence, citations, lineage, decision configuration, and result snapshot in Postgres. Every saved-record read, write, and delete is protected server-side and filtered by owner ID.
 
 ## Run locally
 
-Requirements: Docker with Compose, or Python 3.12 and Node.js 22.
+Requirements: Docker Compose, Node.js 22 for frontend development, and Python 3.12 for backend development.
 
 ```bash
 docker compose up --build
 ```
 
-Open `http://localhost:8000`. OpenAPI docs are at `http://localhost:8000/docs`; health is at `/healthz`.
+Open `http://localhost:8000`. The local Compose stack has a development-only Postgres database and bootstrap code in `docker-compose.yml`; this code is strictly for a local workstation and must never be used on a public server. Initial owner setup is shown once, after which the setup route closes. API documentation is at `/docs`, health is at `/healthz`.
 
-For separate development servers, run the API on port 8000 and the web app on 3000:
+For backend tests:
 
 ```bash
 cd apps/api
-python -m venv .venv
-. .venv/bin/activate
-pip install -r requirements.txt
-uvicorn indepora.main:app --reload --port 8000
+python -m pip install -r requirements-dev.txt
+cd ../..
+PYTHONPATH=apps/api python -m pytest -q apps/api/tests
 ```
 
-In another terminal:
+For frontend checks:
 
 ```bash
 cd apps/web
 npm ci
-npm run dev
+npm run lint
+npm run build
 ```
 
-The API allows local Next.js origins on port 3000. The client uses the same-origin API when served through the container.
+## Evidence input format
 
-## Input format
-
-Each non-empty evidence line in the console follows:
+Each non-empty line in the console uses:
 
 ```text
 ID | title | URL | supports/contradicts/unknown | optional excerpt | optional upstream evidence ID
 ```
 
-Use `derived_from` only when the relationship is known or attested. Exact normalized text matches are marked as observed duplicates. Same-URL items with missing/different text are possible links. Other relations remain unknown.
+Only submit `derived_from` when the relationship is known or attested. Exact normalized-text matches are observable duplicates. A same-URL match without confirming content is merely possible. Other relationships remain unknown; different URLs never mean independent evidence.
 
-## API
+## Versioned Reliance Records
 
-- `POST /v1/reliance/inspect`
-- `POST /v1/reliance/collapse`
-- `POST /v1/reliance/evaluate`
-- `POST /v1/reliance/witness`
-- `POST /v1/reliance/seal`
+A saved snapshot includes the original submitted input, analysis output, Stemma graph, candidate Fount references, Strands, Kin relationships and methods, Fount Count, an explicitly defined Echo Mass count, Veiled/unknown lineage, conflicts, Charter, Standing/decision, engine and configuration versions, model versions, timestamp, and record ID. Historical retrieval returns the stored snapshot; it does not rerun a newer engine against the old input.
 
-See `docs/API.md` and FastAPI's `/docs` for schemas. `benchmarks/fixtures/reliance-v0.1.json` contains a deterministic sample.
+The displayed metrics are operational descriptions of the submitted dataset. Fount references are not independent-source counts. Echo Mass includes only excess appearances in components formed by observed or attested links; possible and unknown links are excluded. Veiled evidence is not automatically treated as dependent; the caller-supplied Charter controls whether unresolved lineage qualifies or blocks a workflow.
 
-## Important prototype limitations
+## API and privacy
 
-There is no authentication, tenant isolation, database persistence, or customer data retention policy in v0.1. Do not enter confidential, personal, regulated, or customer evidence in a public deployment. Inputs are analyzed in memory by the app; hosting-platform infrastructure logs and retention are outside the app's control. No external LLM, crawler, or search service is called. Source authority is not scored; conflicts rely on supplied labels; freshness needs timestamps and a policy. See `docs/SAFETY_AND_SCOPE.md`.
+Authenticated endpoints are described in [`docs/API.md`](docs/API.md). Storage and first-owner setup are described in [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md). Privacy boundaries and remaining limitations are in [`docs/SAFETY_AND_SCOPE.md`](docs/SAFETY_AND_SCOPE.md). Primary-source security references are in [`docs/SECURITY_REFERENCES.md`](docs/SECURITY_REFERENCES.md).
 
-The SHA-256 digest is unsigned and verifies only byte-level integrity of the serialized report. It does not prove claim truth, source authenticity, or lineage correctness.
+Sessions are stored server-side as token digests and use HttpOnly, Secure, SameSite cookies in production, CSRF defenses, Argon2id password hashes, idle/absolute expiry, and password-change session rotation. Request logs contain only request ID, route template, method, status, and timing; request bodies and evidence are not logged by application code. The app does not call an external LLM, crawler, analytics service, or search service.
 
-## Next architecture milestones
-
-1. Build the benchmark and compare with URL, exact-text, similarity, and human-reviewed baselines.
-2. Add a versioned OTLP/OpenInference adapter that documents field loss and never assumes missing lineage.
-3. Add Postgres persistence and migrations only after defining tenant, retention, deletion, and secret-handling controls.
-4. Implement MCP and SDKs against stable versioned API schemas.
-5. Add customer policy gates only after a customer-specific use case and evaluation criteria are agreed.
+This MVP is not a compliance certification or multi-tenant SaaS system. It has no email-based password recovery, invitation/role model, managed retention schedule, external security audit, or deployment-level backup guarantee. Lost-password recovery is an operator-only Railway SSH command that prompts for the new password without echoing it and revokes all sessions. Do not treat the prototype as certified for regulated workloads.

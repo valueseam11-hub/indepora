@@ -44,3 +44,19 @@ class InspectRequest(BaseModel):
         if len(ids) != len(set(ids)):
             raise ValueError("Evidence IDs must be unique within a request.")
         return self
+
+
+class OwnerBootstrapRequest(BaseModel):
+    bootstrap_secret: str = Field(min_length=32, max_length=256)
+    email: str = Field(min_length=3, max_length=320)
+    password: str = Field(min_length=14, max_length=128)
+
+
+class OwnerLoginRequest(BaseModel):
+    email: str = Field(min_length=3, max_length=320)
+    password: str = Field(min_length=1, max_length=128)
+
+
+class PasswordChangeRequest(BaseModel):
+    current_password: str = Field(min_length=1, max_length=128)
+    new_password: str = Field(min_length=14, max_length=128)
