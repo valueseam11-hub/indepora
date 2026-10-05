@@ -2,7 +2,9 @@
 
 ## Current services
 
-The app is served at [indepora-production.up.railway.app](https://indepora-production.up.railway.app) from the public repository [valueseam11-hub/indepora](https://github.com/valueseam11-hub/indepora). The application Dockerfile builds the static Next.js interface, runs FastAPI, and applies Alembic migrations before starting. The Railway project already contains an existing PostgreSQL service named `Postgres`; use it. Do not create a second database or turn on public database networking.
+The application is served at [indepora-production.up.railway.app](https://indepora-production.up.railway.app) from the public repository [valueseam11-hub/indepora](https://github.com/valueseam11-hub/indepora). The application Dockerfile builds the static Next.js interface, runs FastAPI, and applies Alembic migrations before starting. The Railway project already contains an existing PostgreSQL service named `Postgres`; use it. Do not create a second database or turn on public database networking.
+
+The public site routes are `/`, `/product/`, `/developers/`, `/research/`, `/design-partners/`, and `/trust/`. `/workspace/` is the private owner UI. `/docs` is the API schema and `/healthz` is the non-sensitive health check. `POST /v1/stemcheck` is an anonymous transient demo route; saved-record APIs remain owner-authenticated.
 
 ## Required service variables
 
@@ -25,7 +27,7 @@ Set the bootstrap secret through a secret input or stdin, not as a literal visib
 ## First owner setup
 
 1. Deploy the app with the `DATABASE_URL` reference and a strong temporary bootstrap secret. The container runs `alembic upgrade head`; deployment should not be considered ready unless migration and `/healthz` succeed.
-2. Open the app in a browser. The one-time setup form asks for the bootstrap code, the owner's email, and a password of at least 14 characters. Enter the password directly in the browser, never in chat or source control.
+2. Open `/workspace/`. The one-time setup form asks for the bootstrap code, the owner's email, and a password of at least 14 characters. Enter the password directly in the browser, never in chat or source control.
 3. After successful account creation, remove `INDEPORA_BOOTSTRAP_SECRET` from the app service and deploy the removal. The owner setup endpoint is also closed in the database after creation, but removing the secret eliminates the remaining deployment credential.
 4. The owner may rotate the password from the app's account controls; existing sessions are revoked.
 
@@ -39,7 +41,13 @@ The command prompts for the new password with terminal echo disabled, updates on
 
 ## Safe deployment checks
 
-After deployment, verify `/healthz` returns `status: ok` and version `0.2.0`; confirm unauthenticated `/v1/records` returns `401`; confirm the browser displays login rather than open analysis; and test that analysis does not add a record until Save is explicitly clicked. Confirm the `Postgres` service itself remains private. The app uses request templates and no-body logging; Uvicorn access logs are disabled.
+After deployment, verify `/healthz` returns `status: ok` and version `0.2.0`; confirm unauthenticated `/v1/records` returns `401`; verify each public static route responds with `200`; and test that analysis does not add a record until Save is explicitly clicked. Confirm the `Postgres` service itself remains private. The app uses route templates and no-body logging; Uvicorn access logs are disabled.
+
+## Bounded live load test
+
+`python3 benchmarks/live_load.py` is the only approved live suite for this MVP; the target host and limits are fixed in the script. It sends one health check and at most 900 synthetic `POST /v1/stemcheck` requests in three phases: 100 at concurrency 1, 300 at concurrency 5, and 500 at concurrency 10. It has a strict 60-second global deadline and stops on any 5xx/429, more than 1% non-200 responses, or a phase p95 above 5 seconds. It reports counts and latency percentiles only—never request inputs. It does not touch authentication, saved records, or Postgres data. Do not raise the request, concurrency, or duration limits without owner approval.
+
+The endpoint's 1,200-request/minute limiter is in-memory per app process and per client; the load run stays below it. This test is a bounded application smoke/load check, not a capacity certification, security audit, or SLA measurement.
 
 ## Source and container
 

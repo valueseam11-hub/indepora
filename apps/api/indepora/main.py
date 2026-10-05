@@ -1,10 +1,13 @@
 from __future__ import annotations
 
 import hashlib
+import hmac
 import logging
 import os
+import secrets
+import threading
 import time
-from collections import defaultdict
+from collections import OrderedDict, defaultdict, deque
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Generator
@@ -50,6 +53,33 @@ LOGIN_WINDOW_SECONDS = 15 * 60
 LOGIN_MAX_ATTEMPTS = 8
 LOGIN_FAILURES: dict[str, tuple[float, int]] = {}
 LOGGER = logging.getLogger("indepora.request")
+STEMCHECK_WINDOW_SECONDS = 60.0
+STEMCHECK_MAX_PER_MINUTE = 1200
+
+
+def _take_stemcheck_slot(request: Request) -> tuple[bool, int]:
+    """Apply an in-memory per-client limit without persisting or logging client IPs."""
+    state = request.app.state
+    remote = request.client.host if request.client else "unknown"
+    key = hmac.new(state.stemcheck_rate_salt, remote.encode("utf-8", "replace"), hashlib.sha256).hexdigest()
+    now = time.monotonic()
+    with state.stemcheck_rate_lock:
+        buckets = state.stemcheck_rate_buckets
+        events = buckets.get(key)
+        if events is None:
+            events = deque()
+            buckets[key] = events
+        while events and now - events[0] >= STEMCHECK_WINDOW_SECONDS:
+            events.popleft()
+        if len(events) >= state.stemcheck_rate_limit:
+            retry_after = max(1, int(STEMCHECK_WINDOW_SECONDS - (now - events[0]) + 0.999))
+            buckets.move_to_end(key)
+            return False, retry_after
+        events.append(now)
+        buckets.move_to_end(key)
+        while len(buckets) > 10_000:
+            buckets.popitem(last=False)
+    return True, 0
 
 
 def _aware(value: datetime) -> datetime:
@@ -151,6 +181,10 @@ def create_app(
     app.state.session_cookie_name = "__Host-indepora_session" if secure_cookies else "indepora_session"
     app.state.csrf_cookie_name = "__Host-indepora_csrf" if secure_cookies else "indepora_csrf"
     app.state.static_dir = static_dir or os.getenv("INDEPORA_STATIC_DIR", "/app/web")
+    app.state.stemcheck_rate_buckets = OrderedDict()
+    app.state.stemcheck_rate_lock = threading.Lock()
+    app.state.stemcheck_rate_salt = secrets.token_bytes(32)
+    app.state.stemcheck_rate_limit = STEMCHECK_MAX_PER_MINUTE
 
     app.add_middleware(
         CORSMiddleware,
@@ -203,6 +237,7 @@ def create_app(
         request.state.request_id = request_id
         started = time.perf_counter()
         content_length = request.headers.get("content-length")
+        response = None
         if request.url.path.startswith("/v1/") and content_length:
             try:
                 declared_length = int(content_length)
@@ -212,9 +247,15 @@ def create_app(
                 response = JSONResponse(status_code=400, content={"detail": "Invalid request."})
             elif declared_length > MAX_API_BODY_BYTES:
                 response = JSONResponse(status_code=413, content={"detail": "Request exceeds the 2 MiB limit."})
-            else:
-                response = await call_next(request)
-        else:
+        if response is None and request.url.path == "/v1/stemcheck" and request.method == "POST":
+            allowed, retry_after = _take_stemcheck_slot(request)
+            if not allowed:
+                response = JSONResponse(
+                    status_code=429,
+                    content={"detail": "Stemcheck request limit reached. Try again later."},
+                    headers={"Retry-After": str(retry_after)},
+                )
+        if response is None:
             response = await call_next(request)
 
         route = request.scope.get("route")
@@ -253,6 +294,11 @@ def create_app(
     @app.get("/healthz", tags=["system"])
     def health() -> dict[str, str]:
         return {"status": "ok", "version": __version__}
+
+    @app.post("/v1/stemcheck", tags=["public"])
+    def public_stemcheck(body: InspectRequest) -> dict[str, Any]:
+        # Public analysis is transient: it has no database dependency and writes no record.
+        return inspect_reliance(body)
 
     @app.get("/v1/auth/csrf", tags=["auth"])
     def get_csrf(request: Request, response: Response) -> dict[str, str]:

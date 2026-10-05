@@ -57,6 +57,9 @@ def test_private_routes_require_owner_authentication():
     app = create_app(engine=engine, bootstrap_secret=BOOTSTRAP_SECRET, secure_cookies=False, static_dir="/nonexistent")
     with TestClient(app) as client:
         assert client.post("/v1/reliance/inspect", json=example_payload()).status_code == 401
+        public = client.post("/v1/stemcheck", json=example_payload())
+        assert public.status_code == 200
+        assert public.json()["summary"]["evidence_appearances"] == 2
         assert client.get("/v1/records").status_code == 401
         assert client.get("/v1/auth/bootstrap/status").json() == {"owner_setup_required": True}
         assert client.get("/v1/auth/me").status_code == 401
@@ -178,6 +181,34 @@ def test_inspection_is_transient_and_save_persists_only_on_explicit_post(authed,
     listed = client.get("/v1/records").json()["items"]
     assert len(listed) == 1
     assert listed[0]["record_id"] == record_id
+
+
+def test_public_stemcheck_is_transient_and_does_not_log_claim_or_evidence(authed, caplog):
+    client, _ = authed
+    secret_text = "PUBLIC-TRANSIENT-CLAIM-DO-NOT-LOG-67021"
+    payload = {
+        "claim": secret_text,
+        "evidence": [
+            {"id": "private", "title": "Sensitive citation", "url": "https://private.example/ref", "text": secret_text}
+        ],
+    }
+    caplog.set_level(logging.INFO, logger="indepora.request")
+    response = client.post("/v1/stemcheck", json=payload)
+    assert response.status_code == 200
+    assert response.json()["claim"]["text"] == secret_text
+    assert secret_text not in caplog.text
+    assert client.get("/v1/records").json()["items"] == []
+
+
+def test_public_stemcheck_rate_limit_is_bounded_and_does_not_reveal_client_data(authed):
+    client, _ = authed
+    client.app.state.stemcheck_rate_limit = 1
+    first = client.post("/v1/stemcheck", json=example_payload())
+    second = client.post("/v1/stemcheck", json=example_payload())
+    assert first.status_code == 200
+    assert second.status_code == 429
+    assert second.headers.get("retry-after")
+    assert "127.0.0.1" not in second.text
 
 
 def test_records_are_owner_scoped_and_delete_is_explicit(authed):

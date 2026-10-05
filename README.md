@@ -1,12 +1,25 @@
 # Indepora Reliance Fabric v0.2.0
 
-**Indepora** is a private, single-owner evidence-assurance prototype for mapping claim-to-evidence lineage, surfacing dependent echoes, and keeping unknown relationships explicitly unknown. It does not determine claim truth or prove that sources are independent.
+**Indepora** is a single-owner evidence-assurance prototype for mapping claim-to-evidence lineage, surfacing dependent echoes, and keeping unknown relationships explicitly unknown. It does not determine claim truth or prove that sources are independent.
+
+## Product surfaces
+
+The live application is hosted at [indepora-production.up.railway.app](https://indepora-production.up.railway.app).
+
+- `/` — public product site and synthetic, transient Stemcheck demo.
+- `/product/`, `/developers/`, `/research/`, `/design-partners/`, `/trust/` — product scope, API status, research plan, pilot boundaries, and privacy notes.
+- `/workspace/` — private single-owner login and console; no public sign-up or team access.
+- `/docs` — interactive OpenAPI documentation; `/healthz` — service status.
+- `POST /v1/stemcheck` — anonymous request-scoped analysis; no database writes or saved-record URLs.
+- `/v1/records*` and other workspace operations — server-side owner-authenticated.
+
+The public site intentionally distinguishes what exists from what is planned. The REST API is available; no installable SDK, MCP server, agent-framework plugin, telemetry ingestion, retrieval connector, GRC export, public benchmark leaderboard, or external action bridge is included yet.
 
 ## What this release does
 
 The application follows the architecture pipeline `Reliance Ingress → Claim Forge → Origin Mesh → Thread Builder → Reliance Map → Separation Engine → Conflict/Freshness/Authority assessment → optional Charter/Gate → Reliance Witness → Reliance Seal`. The FastAPI engines are separated into modules under `apps/api/indepora`; the React/Next.js interface is statically exported and served same-origin.
 
-The workspace has **one owner account, no public sign-up, no teams, and no automatic data retention**. Inspect requests are request-scoped and are not written to the database. Only the explicit **Save Reliance Record** action stores the submitted claim, answer, evidence, citations, lineage, decision configuration, and result snapshot in Postgres. Every saved-record read, write, and delete is protected server-side and filtered by owner ID.
+The workspace has **one owner account, no public sign-up, no teams, and no automatic data retention**. Public Stemcheck and owner inspect requests are request-scoped and are not written to the database. Only the explicit **Save Reliance Record** action stores the submitted claim, answer, evidence, citations, lineage, decision configuration, and result snapshot in Postgres. Every saved-record read, write, and delete is protected server-side and filtered by owner ID.
 
 ## Run locally
 
@@ -38,7 +51,7 @@ npm run build
 
 ## Evidence input format
 
-Each non-empty line in the console uses:
+Each non-empty line in the owner console uses:
 
 ```text
 ID | title | URL | supports/contradicts/unknown | optional excerpt | optional upstream evidence ID
@@ -52,10 +65,18 @@ A saved snapshot includes the original submitted input, analysis output, Stemma 
 
 The displayed metrics are operational descriptions of the submitted dataset. Fount references are not independent-source counts. Echo Mass includes only excess appearances in components formed by observed or attested links; possible and unknown links are excluded. Veiled evidence is not automatically treated as dependent; the caller-supplied Charter controls whether unresolved lineage qualifies or blocks a workflow.
 
-## API and privacy
+## API, privacy, and validation
 
-Authenticated endpoints are described in [`docs/API.md`](docs/API.md). Storage and first-owner setup are described in [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md). Privacy boundaries and remaining limitations are in [`docs/SAFETY_AND_SCOPE.md`](docs/SAFETY_AND_SCOPE.md). Primary-source security references are in [`docs/SECURITY_REFERENCES.md`](docs/SECURITY_REFERENCES.md).
+Authenticated and public API routes are described in [`docs/API.md`](docs/API.md). Storage and first-owner setup are described in [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md). Privacy boundaries and remaining limitations are in [`docs/SAFETY_AND_SCOPE.md`](docs/SAFETY_AND_SCOPE.md). Primary-source security references are in [`docs/SECURITY_REFERENCES.md`](docs/SECURITY_REFERENCES.md).
 
-Sessions are stored server-side as token digests and use HttpOnly, Secure, SameSite cookies in production, CSRF defenses, Argon2id password hashes, idle/absolute expiry, and password-change session rotation. Request logs contain only request ID, route template, method, status, and timing; request bodies and evidence are not logged by application code. The app does not call an external LLM, crawler, analytics service, or search service.
+Sessions are stored server-side as token digests and use HttpOnly, Secure, SameSite cookies in production, CSRF defenses, Argon2id password hashes, idle/absolute expiry, and password-change session rotation. Request logs contain request ID, route template, method, status, and timing; request bodies and evidence are not logged by application code. The app does not call an external LLM, crawler, analytics, or search service. The public Stemcheck limit is in-memory per process and is not a distributed security boundary.
+
+Run the deterministic local fixture with:
+
+```bash
+apps/api/.venv/bin/python benchmarks/smoke.py
+```
+
+The bounded live-load suite is documented in [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md); it is hard-capped at 900 analysis requests plus one health check and 60 seconds.
 
 This MVP is not a compliance certification or multi-tenant SaaS system. It has no email-based password recovery, invitation/role model, managed retention schedule, external security audit, or deployment-level backup guarantee. Lost-password recovery is an operator-only Railway SSH command that prompts for the new password without echoing it and revokes all sessions. Do not treat the prototype as certified for regulated workloads.
