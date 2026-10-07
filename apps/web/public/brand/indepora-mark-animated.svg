@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 108" role="img" aria-labelledby="title desc">
+  <title id="title">INDEPORA evidence-lineage mark</title>
+  <desc id="desc">One evidence stem branches into five colored strands and settles at five endpoints.</desc>
+  <defs>
+    <linearGradient id="root" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#36a4ff"/>
+      <stop offset="1" stop-color="#2844ff"/>
+    </linearGradient>
+  </defs>
+  <style>
+    .stem,.strand{fill:none;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:100;stroke-dashoffset:100;opacity:.15;animation:draw 7s cubic-bezier(.22,.7,.2,1) infinite}
+    .stem{stroke:url(#root);stroke-width:5;animation-delay:0s}
+    .strand{stroke-width:4}
+    .s1{stroke:#247cff;animation-delay:.12s}.s2{stroke:#8756ff;animation-delay:.26s}.s3{stroke:#18d5d1;animation-delay:.4s}.s4{stroke:#ffb339;animation-delay:.54s}.s5{stroke:#e936ad;animation-delay:.68s}
+    .root,.endpoint{opacity:.18;transform-box:fill-box;transform-origin:center;animation:land 7s cubic-bezier(.2,.8,.2,1) infinite}
+    .root{fill:url(#root);animation-delay:.08s}.n1{fill:#247cff;animation-delay:.2s}.n2{fill:#8756ff;animation-delay:.34s}.n3{fill:#18d5d1;animation-delay:.48s}.n4{fill:#ffb339;animation-delay:.62s}.n5{fill:#e936ad;animation-delay:.76s}
+    @keyframes draw{0%,4%{stroke-dashoffset:100;opacity:.15}18%,68%{stroke-dashoffset:0;opacity:1}82%,100%{stroke-dashoffset:100;opacity:.15}}
+    @keyframes land{0%,10%{opacity:.12;transform:scale(.28)}19%,68%{opacity:1;transform:scale(1)}82%,100%{opacity:.12;transform:scale(.28)}}
+    @media(prefers-reduced-motion:reduce){.stem,.strand,.root,.endpoint{animation:none!important;stroke-dashoffset:0;opacity:1;transform:none}}
+  </style>
+  <path class="stem" pathLength="100" d="M60 12v20"/>
+  <path class="strand s1" pathLength="100" d="M60 32C53 51 29 51 12 82"/>
+  <path class="strand s2" pathLength="100" d="M60 32C56 53 43 62 34 87"/>
+  <path class="strand s3" pathLength="100" d="M60 32v57"/>
+  <path class="strand s4" pathLength="100" d="M60 32C64 53 77 62 86 87"/>
+  <path class="strand s5" pathLength="100" d="M60 32C67 51 91 51 108 82"/>
+  <circle class="root" cx="60" cy="12" r="9"/>
+  <circle class="endpoint n1" cx="12" cy="84" r="6"/>
+  <circle class="endpoint n2" cx="34" cy="89" r="6"/>
+  <circle class="endpoint n3" cx="60" cy="91" r="6"/>
+  <circle class="endpoint n4" cx="86" cy="89" r="6"/>
+  <circle class="endpoint n5" cx="108" cy="84" r="6"/>
+</svg>

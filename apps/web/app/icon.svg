@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <title>INDEPORA</title>
+  <style>
+    path{fill:none;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:100;stroke-dashoffset:100;animation:draw 7s ease-in-out infinite}
+    .blue{stroke:#247cff;stroke-width:7;animation-delay:.12s}.cyan{stroke:#18d5d1;stroke-width:7;animation-delay:.32s}.magenta{stroke:#e936ad;stroke-width:7;animation-delay:.52s}
+    circle{transform-box:fill-box;transform-origin:center;opacity:.2;animation:land 7s ease-in-out infinite}.top{fill:#36a4ff}.n1{fill:#247cff;animation-delay:.22s}.n2{fill:#18d5d1;animation-delay:.42s}.n3{fill:#e936ad;animation-delay:.62s}
+    @keyframes draw{0%,5%{stroke-dashoffset:100;opacity:.15}20%,68%{stroke-dashoffset:0;opacity:1}82%,100%{stroke-dashoffset:100;opacity:.15}}
+    @keyframes land{0%,12%{opacity:.1;transform:scale(.3)}22%,68%{opacity:1;transform:scale(1)}82%,100%{opacity:.1;transform:scale(.3)}}
+    @media(prefers-reduced-motion:reduce){path,circle{animation:none!important;stroke-dashoffset:0;opacity:1;transform:none}}
+  </style>
+  <path d="M50 13v18" stroke="#36a4ff" stroke-width="7"/>
+  <path class="blue" d="M50 31C44 50 25 59 16 82"/>
+  <path class="cyan" d="M50 31v54"/>
+  <path class="magenta" d="M50 31c6 19 25 28 34 51"/>
+  <circle class="top" cx="50" cy="13" r="11"/>
+  <circle class="n1" cx="16" cy="84" r="7"/>
+  <circle class="n2" cx="50" cy="87" r="7"/>
+  <circle class="n3" cx="84" cy="84" r="7"/>
+</svg>

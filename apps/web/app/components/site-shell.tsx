@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import type { ReactNode } from "react";
 
 const navigation = [
@@ -12,13 +13,7 @@ const navigation = [
 
 function BrandMark() {
   return (
-    <svg className="site-brand-mark" viewBox="0 0 40 40" aria-hidden="true">
-      <path d="M20 5v11M20 16 9 23M20 16l11 7M9 23v10M31 23v10M20 16v17" />
-      <circle cx="20" cy="5" r="2.5" />
-      <circle cx="9" cy="23" r="2.5" />
-      <circle cx="31" cy="23" r="2.5" />
-      <circle cx="20" cy="33" r="2.5" />
-    </svg>
+    <Image className="site-brand-mark" src="/brand/indepora-mark-animated.svg" width={36} height={40} unoptimized alt="" aria-hidden="true" />
   );
 }
 

@@ -473,7 +473,7 @@ export default function Home() {
           <Metric label="Veiled pairs" value={overview.unknown_relationship_pairs} note="lineage unresolved" tone="amber" />
         </div>
         <div className="metric-grid metric-grid-secondary">
-          <Metric label="Fount references" value={Number((report as Report & { fount_count?: { candidate_fount_references?: number } }).fount_count?.candidate_fount_references ?? 0)} note="not independent-source count" />
+          <Metric label="Candidate Fount References" value={Number((report as Report & { fount_count?: { candidate_fount_references?: number } }).fount_count?.candidate_fount_references ?? 0)} note="not an independence count" />
           <Metric label="Echo Mass" value={Number((report as Report & { echo_mass?: { observed_or_attested_excess_appearances?: number } }).echo_mass?.observed_or_attested_excess_appearances ?? 0)} note="observed / attested excess only" tone="amber" />
           <Metric label="Standing" value={String(report.standing ?? report.policy_result.outcome)} note="Charter workflow outcome" />
           <Metric label="Engine" value={String(report.engine_version ?? "—")} note="snapshot version" />

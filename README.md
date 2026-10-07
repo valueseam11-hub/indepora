@@ -1,25 +1,46 @@
-# Indepora Reliance Fabric v0.2.0
+<p align="center">
+  <img src="https://raw.githubusercontent.com/valueseam11-hub/indepora/main/apps/web/public/brand/indepora-mark-animated.svg" alt="INDEPORA live evidence-lineage mark" width="96" />
+</p>
+
+<h1 align="center">INDEPORA</h1>
+<p align="center"><strong>Evidence Assurance Infrastructure for AI</strong><br />Agent count is not evidence count.</p>
 
 **Indepora** is a single-owner evidence-assurance prototype for mapping claim-to-evidence lineage, surfacing dependent echoes, and keeping unknown relationships explicitly unknown. It does not determine claim truth or prove that sources are independent.
 
 ## Product surfaces
 
-The live application is hosted at [indepora-production.up.railway.app](https://indepora-production.up.railway.app).
+The live application is hosted at [indepora-production.up.railway.app](https://indepora-production.up.railway.app). The same animated SVG mark is used in the public website header, hero, footer, browser icon, and this repository.
 
-- `/` — public product site and synthetic, transient Stemcheck demo.
-- `/product/`, `/developers/`, `/research/`, `/design-partners/`, `/trust/` — product scope, API status, research plan, pilot boundaries, and privacy notes.
+- `/` — public product site and synthetic, transient Stemcheck demo. Journey: see the problem → run Stemcheck → inspect computed Stemma and Standing → read limitations → review the internal evaluation → open API docs → design-partner status.
+- `/product/`, `/developers/`, `/research/`, `/design-partners/`, `/trust/` — product scope, API status, internal evaluation and research limits, pilot boundaries, and privacy notes.
 - `/workspace/` — private single-owner login and console; no public sign-up or team access.
 - `/docs` — interactive OpenAPI documentation; `/healthz` — service status.
 - `POST /v1/stemcheck` — anonymous request-scoped analysis; no database writes or saved-record URLs.
 - `/v1/records*` and other workspace operations — server-side owner-authenticated.
 
-The public site intentionally distinguishes what exists from what is planned. The REST API is available; no installable SDK, MCP server, agent-framework plugin, telemetry ingestion, retrieval connector, GRC export, public benchmark leaderboard, or external action bridge is included yet.
+The public site intentionally distinguishes computed output, internal evaluation, illustrative examples, planned work, and roadmap items. The REST API is available; no installable SDK, MCP server, agent-framework plugin, telemetry ingestion, retrieval connector, GRC export, public benchmark leaderboard, or external action bridge is included yet.
 
 ## What this release does
 
 The application follows the architecture pipeline `Reliance Ingress → Claim Forge → Origin Mesh → Thread Builder → Reliance Map → Separation Engine → Conflict/Freshness/Authority assessment → optional Charter/Gate → Reliance Witness → Reliance Seal`. The FastAPI engines are separated into modules under `apps/api/indepora`; the React/Next.js interface is statically exported and served same-origin.
 
 The workspace has **one owner account, no public sign-up, no teams, and no automatic data retention**. Public Stemcheck and owner inspect requests are request-scoped and are not written to the database. Only the explicit **Save Reliance Record** action stores the submitted claim, answer, evidence, citations, lineage, decision configuration, and result snapshot in Postgres. Every saved-record read, write, and delete is protected server-side and filtered by owner ID.
+
+## Internal evaluation summary
+
+A small team-authored evaluation is shown on the [Research page](https://indepora-production.up.railway.app/research/). Reported results:
+
+| Case set / system | Reported result |
+|---|---:|
+| Indepora · development set | 9 / 12 |
+| Indepora · held-out set | 9 / 11 |
+| Indepora · clean held-out result | 8 / 10 |
+| Text-similarity baseline · held-out set | 5 / 11 |
+| URL-deduplication baseline · held-out set | 2 / 11 |
+
+> These cases were authored by the Indepora team. The held-out set was written and evaluated before the engine was changed. One cited-URL case was added after observing the failure and is excluded from the clean held-out result.
+
+This is an **internal evaluation**, not an independent benchmark, calibrated score, or general-performance claim. The case-level dataset and annotation protocol are not published with this prototype, so the summary is not independently reproducible from this repository. Embedding and LLM-judge baselines are not yet complete. Known failure modes include shared boilerplate, translation, undeclared news-to-filing lineage, semantic/entity-level relationships, and unknown provenance.
 
 ## Run locally
 
@@ -61,9 +82,9 @@ Only submit `derived_from` when the relationship is known or attested. Exact nor
 
 ## Versioned Reliance Records
 
-A saved snapshot includes the original submitted input, analysis output, Stemma graph, candidate Fount references, Strands, Kin relationships and methods, Fount Count, an explicitly defined Echo Mass count, Veiled/unknown lineage, conflicts, Charter, Standing/decision, engine and configuration versions, model versions, timestamp, and record ID. Historical retrieval returns the stored snapshot; it does not rerun a newer engine against the old input.
+A saved snapshot includes the original submitted input, analysis output, Stemma graph, **Candidate Fount References**, Strands, Kin relationships and methods, Fount Count, an explicitly defined Echo Mass count, Veiled/unknown lineage, conflicts, Charter, Standing/decision, engine and configuration versions, model versions, timestamp, and record ID. Historical retrieval returns the stored snapshot; it does not rerun a newer engine against the old input.
 
-The displayed metrics are operational descriptions of the submitted dataset. Fount references are not independent-source counts. Echo Mass includes only excess appearances in components formed by observed or attested links; possible and unknown links are excluded. Veiled evidence is not automatically treated as dependent; the caller-supplied Charter controls whether unresolved lineage qualifies or blocks a workflow.
+The displayed metrics are operational descriptions of the submitted dataset. Candidate Fount References are not independent-source counts. Echo Mass includes only excess appearances in components formed by observed or attested links; possible and unknown links are excluded. Veiled evidence is not automatically treated as dependent; the caller-supplied Charter controls whether unresolved lineage qualifies or blocks a workflow.
 
 ## API, privacy, and validation
 
@@ -77,6 +98,6 @@ Run the deterministic local fixture with:
 apps/api/.venv/bin/python benchmarks/smoke.py
 ```
 
-The bounded live-load suite is documented in [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md); the revised fixed plan is 250 analysis requests plus one health check and a 60-second maximum. After an initial run stopped at the deadline, the owner-approved 1/5/10-client follow-up completed all 250 requests in 50.8 seconds; see [`docs/LIVE_LOAD_TEST_REPORT.md`](docs/LIVE_LOAD_TEST_REPORT.md) for both results and limits.
+The bounded live-load suite is documented in [`docs/LIVE_LOAD_TEST_REPORT.md`](docs/LIVE_LOAD_TEST_REPORT.md); the revised fixed plan is 250 analysis requests plus one health check and a 60-second maximum. The owner-approved 1/5/10-client follow-up completed all 250 requests in 50.8 seconds. The suite is bounded validation, not capacity certification, security audit, or SLA measurement.
 
 This MVP is not a compliance certification or multi-tenant SaaS system. It has no email-based password recovery, invitation/role model, managed retention schedule, external security audit, or deployment-level backup guarantee. Lost-password recovery is an operator-only Railway SSH command that prompts for the new password without echoing it and revokes all sessions. Do not treat the prototype as certified for regulated workloads.
