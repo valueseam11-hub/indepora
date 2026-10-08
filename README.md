@@ -18,7 +18,9 @@ The live application is hosted at [indepora-production.up.railway.app](https://i
 - `POST /v1/stemcheck` — anonymous request-scoped analysis; no database writes or saved-record URLs.
 - `/v1/records*` and other workspace operations — server-side owner-authenticated.
 
-The public site intentionally distinguishes computed output, internal evaluation, illustrative examples, planned work, and roadmap items. The REST API is available; no installable SDK, MCP server, agent-framework plugin, telemetry ingestion, retrieval connector, GRC export, public benchmark leaderboard, or external action bridge is included yet.
+The public site intentionally distinguishes computed output, internal evaluation, illustrative examples, planned work, and roadmap items. The REST API remains the production contract. An experimental, source-only Python Shadow Gate client and local FastAPI example are included under [`sdks/python`](sdks/python/README.md) and [`examples/fastapi-shadow`](examples/fastapi-shadow/README.md); neither is published to PyPI or production-installed. The pilot observes an existing answer without blocking or changing it. The Charter result is counterfactual, and actual-outcome tracking is future work. MCP, agent-framework plugins, telemetry ingestion, retrieval connectors, GRC export, a public benchmark leaderboard, and external action bridges are not included.
+
+The requested decision sequence and early-tester protocol are documented in [`docs/SHADOW_GATE_PILOT.md`](docs/SHADOW_GATE_PILOT.md).
 
 ## What this release does
 

@@ -10,7 +10,7 @@ type InfoPageProps = {
   children: ReactNode;
 };
 
-type StatusKind = "computed" | "internal" | "illustrative" | "planned" | "roadmap";
+type StatusKind = "computed" | "internal" | "illustrative" | "planned" | "roadmap" | "experimental";
 
 export function InfoPage({ active, kicker, title, description, children }: InfoPageProps) {
   return (
@@ -78,10 +78,10 @@ export function ProductContent() {
     </Block>
 
     <Block title="Plugin and integration status" id="integrations">
-      <p>The product is designed around a narrow HTTP contract, not a connector marketplace. Only the documented API is available today; all other adapters are visibly marked by maturity.</p>
+      <p>The product is designed around a narrow HTTP contract, not a connector marketplace. The Python Shadow Gate is an experimental, source-only preview; the documented API remains the production contract and other adapters are visibly marked by maturity.</p>
       <div className="info-grid">
         <article className="info-card"><Status>AVAILABLE</Status><h3>REST API + OpenAPI</h3><p>Public transient Stemcheck for experiments; separate authenticated endpoints for the single owner&apos;s private workspace.</p></article>
-        <article className="info-card"><Status planned>PLANNED</Status><h3>Python SDK</h3><p>No maintained installable SDK has been published.</p></article>
+        <article className="info-card"><Status kind="experimental">EXPERIMENTAL · SOURCE ONLY</Status><h3>Python Shadow Gate</h3><p>Repository preview with a FastAPI example. It observes without changing or blocking the answer; no PyPI package is published.</p><a className="site-inline-link" href="https://github.com/valueseam11-hub/indepora/tree/main/sdks/python" target="_blank" rel="noreferrer">VIEW PILOT SOURCE ↗</a></article>
         <article className="info-card"><Status planned>PLANNED</Status><h3>TypeScript SDK</h3><p>No maintained installable SDK has been published.</p></article>
         <article className="info-card"><Status planned>PLANNED</Status><h3>OpenTelemetry / OpenInference</h3><p>Instrumentation ingestion is not connected. A future adapter must preserve provenance and uncertainty.</p></article>
         <article className="info-card"><Status planned>PLANNED</Status><h3>MCP + agent frameworks</h3><p>No MCP server or LangChain, LlamaIndex, CrewAI, or AutoGen plugin is included.</p></article>
@@ -105,7 +105,7 @@ export function ProductContent() {
       <p>The public transient Stemcheck is available without an account. The private saved-record workspace has one owner and no public sign-up.</p>
       <div className="plan-grid">
         <article className="plan-card"><Status>AVAILABLE · $0</Status><h3>Stemcheck preview</h3><p>Request-scoped analysis of a small evidence set. No automatic database save and no file upload.</p><Link className="site-inline-link" href="/#stemcheck">Run the preview ↗</Link></article>
-        <article className="plan-card"><Status planned>NOT PUBLISHED</Status><h3>Builder / Team</h3><p>SDKs, multi-user access, team history, and hosted integrations are not available. Pricing has not been set.</p></article>
+        <article className="plan-card"><Status planned>NOT PUBLISHED</Status><h3>Builder / Team</h3><p>An experimental Python source preview exists; no maintained or published package, multi-user access, team history, hosted integrations, or pricing is available.</p></article>
         <article className="plan-card"><Status planned>NOT PUBLISHED</Status><h3>Enterprise</h3><p>SSO, RBAC, private deployment options, automated retention, and policy actuation remain future scope. No price or delivery commitment is published.</p></article>
       </div>
     </Block>
@@ -139,6 +139,20 @@ export function DevelopersContent() {
       <div className="site-hero-actions"><a className="site-button site-button-primary" href="/docs">RUN THE API · OPEN DOCS <span aria-hidden="true">↗</span></a><a className="site-button site-button-quiet" href="https://github.com/valueseam11-hub/indepora" target="_blank" rel="noreferrer">SOURCE REPOSITORY <span aria-hidden="true">↗</span></a></div>
     </Block>
 
+    <Block title="Shadow decision flow" id="shadow-decision-flow">
+      <p>Shadow mode observes an already-produced AI answer. It reports a computed Standing and the configured Charter result without applying either to the caller&apos;s answer.</p>
+      <ol className="shadow-decision-flow" aria-label="Indepora Shadow Gate decision flow">
+        <li><small>01 · INPUT</small><strong>AI DECISION</strong><span>An answer already produced by the caller.</span></li>
+        <li><small>02 · OBSERVER</small><strong>SHADOW GATE</strong><span>Transient Stemcheck inspection; no answer change, block, or save.</span></li>
+        <li><small>03 · COMPUTED</small><strong>Standing</strong><span>A workflow label for the submitted inputs, not a truth or confidence score.</span></li>
+        <li><small>04 · COUNTERFACTUAL</small><strong>Would Charter have allowed reliance?</strong><span>The configured policy outcome is reported as a counterfactual; no reliance is authorized or executed.</span></li>
+        <li><small>05 · HUMAN DECISION</small><strong>Human/team decision</strong><span>A human or authorized owner/operator makes the actual reliance choice; this does not imply team accounts.</span></li>
+        <li><small>06 · FUTURE</small><strong>Eventually: actual outcome</strong><span>Downstream outcome tracking is not connected in this prototype.</span><Status kind="roadmap">NOT CONNECTED · ROADMAP</Status></li>
+      </ol>
+      <div className="info-callout"><strong>Interpretation:</strong> “Would Charter have allowed reliance?” is a hypothetical result under the supplied Charter. Veiled lineage remains unknown, and actual outcomes are not currently captured.</div>
+      <a className="site-inline-link" href="https://github.com/valueseam11-hub/indepora/blob/main/docs/SHADOW_GATE_PILOT.md" target="_blank" rel="noreferrer">READ THE TESTER PILOT GUIDE ↗</a>
+    </Block>
+
     <Block title="A narrow, explicit contract">
       <ul className="info-list">
         <li><span><strong>Input:</strong> claim or answer, evidence IDs, title, URL, optional excerpt, stance labels, optional caller-attested <code>derived_from</code>, and optional Charter configuration.</span></li>
@@ -152,7 +166,8 @@ export function DevelopersContent() {
     <Block title="What is—and is not—available">
       <div className="info-grid">
         <article className="info-card"><Status>AVAILABLE</Status><h3>HTTP API + OpenAPI</h3><p>The endpoint is documented at <code>/docs</code>. Public Stemcheck is transient; authentication, inspect, and record APIs have separate access rules.</p></article>
-        <article className="info-card"><Status planned>NOT PUBLISHED</Status><h3>Python / TypeScript SDKs</h3><p>No packages have been released.</p></article>
+        <article className="info-card"><Status kind="experimental">EXPERIMENTAL · SOURCE ONLY</Status><h3>Python Shadow Gate</h3><p>Source and a local FastAPI example are in the repository; no PyPI release, production gate, or actual-outcome tracker exists.</p><a className="site-inline-link" href="https://github.com/valueseam11-hub/indepora/tree/main/sdks/python" target="_blank" rel="noreferrer">OPEN SDK SOURCE ↗</a></article>
+        <article className="info-card"><Status planned>PLANNED</Status><h3>TypeScript SDK</h3><p>No package has been released.</p></article>
         <article className="info-card"><Status planned>PLANNED</Status><h3>OpenTelemetry / MCP</h3><p>Adapters are not wired; validate a versioned schema before advertising ingestion.</p></article>
         <article className="info-card"><Status planned>PLANNED</Status><h3>Agent, RAG, GRC connectors</h3><p>No agent, observability, identity, or governance integrations are currently installed.</p></article>
       </div>
